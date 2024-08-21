@@ -270,7 +270,9 @@ sub  _bootstrap {
     }
 
     # Pre encode pako into jpack format
-    my $encoded=$packer->encode($pako);
+    my $encoded="if(window.chunkLoader.booted){\n";
+    $encoded.=$packer->encode($pako);
+    $encoded.="\n }";
 
     #do {
     open my $of, ">", $data_file; #"site/data/jpack/boot.jpack";

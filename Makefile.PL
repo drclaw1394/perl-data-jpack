@@ -1,4 +1,3 @@
-use 5.030002;
 use ExtUtils::MakeMaker;
 use File::ShareDir::Install;
 
@@ -18,7 +17,7 @@ WriteMakefile(
     }, # e.g., Module::Name => 1.1
     ABSTRACT_FROM     => 'lib/Data/JPack.pm', # retrieve abstract from module
     AUTHOR            => 'Ruben Westerberg <drclaw@mac.com>',
-    #LICENSE           => 'perl',
+    LICENSE           => 'mit',
     #Value must be from legacy list of licenses here
     #https://metacpan.org/pod/Module::Build::API
 );

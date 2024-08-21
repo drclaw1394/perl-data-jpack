@@ -1,10 +1,13 @@
-
+try {
+  ChunkLoader == undefined;
+}
+catch(e){
 class ChunkLoader extends ScriptLoader {
 	constructor(selfSrc){
 		super(selfSrc);
 
     let parts=this.src.split("/");
-    parts.pop();
+    //parts.pop();
     parts.pop();
     parts.pop();
     parts.pop();
@@ -47,14 +50,14 @@ class ChunkLoader extends ScriptLoader {
 	bootstrap(){
 
     // Path is relative to this.buildRoot
-    return this.queueChunkScript("data/jpack/boot.jpack")
+    return this.queueChunkScript("data/jpack/bootstrap.jpack")
       .then((data)=>{
         let decoder=new TextDecoder("utf-8");
         let string=decoder.decode(data);
         return this.pool.addScriptBody(string)
         .then(()=>{
           // Unload scripts
-          this.unloadScript(this.buildRoot+"data/jpack/boot.jpack");
+          this.unloadScript(this.buildRoot+"data/jpack/bootstrap.jpack");
 
           this.chunksLoaded++;
           this.updateStatus("Boot Complete");
@@ -365,87 +368,6 @@ class ChunkLoader extends ScriptLoader {
 		this.manifest=this.manifest.concat(list);
 	}
 
-	//Execute the manifest list 
-  // Returns a promise resolving when entire group is processed
-  // of rejects if error.
-  // Each chunk is processed with callback.
-  // Callback must return promise
-    /********************************************************************************************************************/
-    /*     loadManifestGroup(group, callback){                                                                          */
-    /* //channelManager.resetBuild();                                                                                   */
-    /*             let ps=[];                                                                                           */
-    /*             let p;                                                                                               */
-    /*             let resolver;                                                                                        */
-    /*             let f=new Promise((resolve,reject)=>{                                                                */
-    /*                     resolver=resolve;                                                                            */
-    /*             });                                                                                                  */
-    /*                                                                                                                  */
-    /*             let scope=this;                                                                                      */
-    /*             let index=0;                                                                                         */
-    /*             let results=Array(group.length);                                                                     */
-    /*             let counter=0;                                                                                       */
-    /*                                                                                                                  */
-    /*             for(let m of group){                                                                                 */
-    /*                     doit(m);                                                                                     */
-    /*             }                                                                                                    */
-    /*                                                                                                                  */
-    /*             function doit(m){                                                                                    */
-    /*                             //console.log("Queuing ", m);                                                        */
-    /*                             p=scope.queueChunkScript(m)                                                          */
-    /*                                     .then((data)=>{                                                              */
-    /*                                             console.log("data ", data.length);                                   */
-    /*                                             counter++;                                                           */
-    /*                                             let i=group.findIndex(e=>e==m);                                      */
-    /*                                             //console.log("FOUND INDEX",i);                                      */
-    /*                                             results[i]=data;                                                     */
-    /*                                             if(results[index]!==undefined){                                      */
-    /*                                                     //console.log("About to build channels index: ", index);     */
-    /*                                                     scope.updateStatus("Building channels from "+m,"open");      */
-    /*           //return channelManager.buildChannels(results[index++]);                                               */
-    /*           return callback(results[index++]);                                                                     */
-    /*                                                                                                                  */
-    /*                                             }                                                                    */
-    /*                                             else{                                                                */
-    /*                                                     return Promise.resolve();                                    */
-    /*                                             }                                                                    */
-    /*                                     })                                                                           */
-    /*                                     .then(()=>{                                                                  */
-    /*                                             if(counter>=results.length){                                         */
-    /*                                                     scope.updateStatus("Building channels complete "+m,"close"); */
-    /*                                                     resolver();                                                  */
-    /*                                             }                                                                    */
-    /*                                             return Promise.resolve();                                            */
-    /*                                     })                                                                           */
-    /*                             ps.push(p);                                                                          */
-    /*             }                                                                                                    */
-    /*             return f                                                                                             */
-    /*             .then(()=>{                                                                                          */
-    /*                     //TODO: need to handle infinite loop if chunk failed to load                                 */
-    /*                     //Finish of the list                                                                         */
-    /*                     let resolver;                                                                                */
-    /*                     let p=new Promise((resolve,reject)=>{                                                        */
-    /*                             resolver=resolve;                                                                    */
-    /*                     });                                                                                          */
-    /*                     function doNext(){                                                                           */
-    /*                             //console.log("STILL MORE TO PROCESS");                                              */
-    /*                             if(index<results.length){                                                            */
-    /*                                     //channelManager.buildChannels(results[index++])                             */
-    /*       callback(results[index++])                                                                                 */
-    /*                                     .then(()=>{                                                                  */
-    /*                                             doNext();                                                            */
-    /*                                     })                                                                           */
-    /*                             }                                                                                    */
-    /*                             else{                                                                                */
-    /*                                     resolver();                                                                  */
-    /*                             }                                                                                    */
-    /*                                                                                                                  */
-    /*                     };                                                                                           */
-    /*                     doNext();                                                                                    */
-    /*                     return p;                                                                                    */
-    /*             });                                                                                                  */
-    /*             ;//Promise.all(ps);                                                                                  */
-    /*     }                                                                                                            */
-    /********************************************************************************************************************/
 
 
 
@@ -463,8 +385,11 @@ class ChunkLoader extends ScriptLoader {
 
 var chunkLoader=new ChunkLoader(document.currentScript.src);	//GLOBAL chunkLoader
 
+window.ChunkLoader=ChunkLoader;
+
 //Setup the status display and bootstrap with pako data
 window.addEventListener("load", (e)=>{
+  chunkLoader.booted=true;
 	chunkLoader.bootstrap()
         .then(()=>{
             console.log("Bootstrap finished");
@@ -474,6 +399,7 @@ window.addEventListener("load", (e)=>{
         .then(()=>{
                 console.log("About to call resolver");
                 chunkLoader.resolver();
+                //Load the app here
         });
 });
 
@@ -486,3 +412,4 @@ function chunkLoaded(event){
 
 console.log("HELLO");
 //channelManager=new ChannelManager(scriptLoader);
+}

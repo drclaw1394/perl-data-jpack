@@ -1,4 +1,7 @@
-
+try {
+  WokerPool ==undefined;
+}
+catch(e){
 //Register for onload evnets from chunks
 //Find all chunks
 //
@@ -303,6 +306,7 @@ class ScriptLoader {
 }
 
 
+
 // A progress indicator. Show progress when under 100%. Show stripes when over 100%
 class LoadingDisplay {
 	constructor(targetDiv){
@@ -376,3 +380,9 @@ class LoadingDisplay {
 // Create gloabl scriptLoader variable
 scriptLoader=new ScriptLoader();
 
+window.LoadingDisplay=LoadingDisplay;
+window.WorkerPool=WorkerPool
+window.ScriptLoader=ScriptLoader;
+window.WorkerTemplate=WorkerTemplate;
+
+}
