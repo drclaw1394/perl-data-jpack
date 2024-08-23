@@ -1,6 +1,6 @@
 =head1 NAME
 
-Data::JPack - Web compatiable data loading, workerppoling, server/local
+Data::JPack - Offline/Online Web application and data system
 
 
 =head1 SYNOPISIS
@@ -19,6 +19,10 @@ samesite/ origin security issues.  Data is normally compressed before encoded
 
 It also implements a worker pool system to allow backgroun processing of data
 and user exentable functions
+
+
+It provides the bootstrapping to load application code, and arbitary data, by
+making a file system database loadable from a webpage.
 
 
 =head1 HOW IT WORKS

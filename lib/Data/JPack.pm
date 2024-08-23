@@ -12,12 +12,13 @@ use MIME::Base64;
 use IO::Compress::RawDeflate qw<rawdeflate>;
 use IO::Uncompress::RawInflate qw<rawinflate $RawInflateError>;
 
-use File::Basename qw<basename>;
-use File::ShareDir ":ALL";
+use File::Basename qw<basename dirname>;
 
 use constant::more B64_BLOCK_SIZE=>(57*71); #Best fit into page size
 
+use File::Path qw<make_path remove_tree>;
 
+use File::ShareDir ":ALL";
 my $share_dir=dist_dir "Data-JPack";
 
 use Export::These qw<jpack_encode jpack_encode_file jpack_decode_file>;
@@ -27,7 +28,7 @@ use Export::These qw<jpack_encode jpack_encode_file jpack_decode_file>;
 #represents a chunk of a data to load
 #could be a an entire file, or just part of one
 #
-use constant::more('options_=0', qw<compress_ buffer_ src_>);
+use constant::more('options_=0', qw<compress_ buffer_ src_ html_root_ html_container_ prefix_  current_set_ current_file_>);
 
 sub new {
 	my $pack=shift//__PACKAGE__;
@@ -47,6 +48,29 @@ sub new {
 	$self->[options_]{jpack_compression}//="none";
 	$self->[options_]{jpack_seq}//=0;
   $self->[buffer_]="";
+  $self->[options_]{html_container}//="index.html";
+  #$self->[options]{prefix}";
+  
+  
+  for($self->[options_]{html_container}){
+    if(/\.html$/){
+      # If it looks like a html file, then assume it will be
+      $self->[html_root_]=dirname $_;
+    }
+    elsif( -d or ! -x){
+      # If its a existing or non existing location assume a dir
+      $self->[html_root_]=$_;
+    }
+    else {
+      $self->[html_root_]=dirname $_;
+    }
+  }
+
+  make_path $self->[html_root_];
+
+  say STDERR "HTML ROOT IS $self->[html_root_]";
+  #$self->[prefix_]
+  #$self->[html_root_];
 	bless $self , $pack;
 }
 
@@ -127,6 +151,8 @@ sub encode_data {
 }
 
 
+# Single shot data encoding. Adds a header, data and footer
+#
 sub encode {
   my $self=shift;
   my $data=shift;
@@ -199,89 +225,90 @@ sub jpack_decode_file {
 }
 
 
-# returns a list of input paths to site output relative pairs suitable for builing a webbase client
-sub resource_map {
-  say STDERR "In resouce map";
-  my @inputs=_bootstrap();
-
-  #<$share_dir/js/*>;
-  #
-  my @outputs;
-
-  push @outputs, "data/jpack/bootstrap.jpack";
-
-  #############################################################
-  # for(@inputs){                                             #
-  #   if(/pako/){                                             #
-  #     # Boot strap this into tmp dir                        #
-  #     $_=_bootstrap();                                      #
-  #     push @outputs, "data/jpack/bootstrap.jpack";          #
-  #   }                                                       #
-  #   else {                                                  #
-  #     push @outputs, "client/components/jpack".basename $_; #
-  #   }                                                       #
-  # }                                                         #
-  #############################################################
-  map {($inputs[$_],$outputs[$_])} 0..$#inputs;
-}
-
-# Javascript resources absolute paths. These file are are to be copied into target output
-sub js_paths {
-  #use feature ":all";
-  #say STDERR "Share dir is $share_dir";
-  grep !/pako/, <$share_dir/js/*>;
-}
-
-
-# Encode the bootstrapping segment into a tempfile, return the path to this temp file
-# This file contains the pako.js module as a chunk. Also prefixed with the
-# chunkloader and worker pool contents
+# File system database
 #
-my $dir;
-sub  _bootstrap {
+# Returns the current set name (dir) for the root dir/prefix
+sub next_set_name {
+  my $self=shift;
+  my $force=shift;
+  # use the html_container as and prefix to locate the current set
+  my $dir=join "/", $self->[html_root_], $self->[options_]{prefix}?($self->[options_]{prefix}):();
 
-    use File::Temp qw<tempdir>;
-    $dir//=tempdir(CLEANUP=>1);
+  my @list;
+  if(defined($force)  and $force){
+    #my $n= sprintf "%032x", int($force)-1;
+    
+    push @list, int($force)-1;
+  }
+  else {
+    # List all dirs with the correct formating in the name
+    @list= map {hex} sort grep {length == 32 } map {-d; basename $_ } <$dir/*>;
 
-    my $data_file="$dir/bootstrap.jpack";
-
-    return $data_file if -e $data_file;
-
-    print STDERR "Regenerating  JPack bootstrap file\n";
-
-    # If the file doesn't exist, create it
-    my @pako=grep /pako/, <$share_dir/js/*>;
-
-
-    my $packer=Data::JPack->new(jpack_compression=>undef, jpack_type=>"boot");
-
-    my $pako= do {
-        local $/=undef;
-        open my $fh, "<", $pako[0]; #sys_path_src "client/components/jpack/pako.min.js";
-        <$fh>;
-    };
-
-    # Process the contents of the chunkloader and workerpool scripts
-    my @js=js_paths;
-    my $prefix="";
-    for(@js){
-      $prefix.=do { open my $fh, "<", $_; local $/; <$fh>};
-      $prefix.="\n";
+    unless(@list){
+      # create a new dir
+      #my $name=sprintf "$dir/%032x", 1;
+      push @list, -1; #$name;
     }
+  }
 
-    # Pre encode pako into jpack format
-    my $encoded="if(window.chunkLoader.booted){\n";
-    $encoded.=$packer->encode($pako);
-    $encoded.="\n }";
+  my $max=pop @list;
 
-    #do {
-    open my $of, ">", $data_file; #"site/data/jpack/boot.jpack";
+	my $name=sprintf "$dir/%032x", $max+1;
 
-    print $of $prefix;
-    print $of $encoded;
+  #make_path $name;
 
-      #};
-    $data_file;
+  $self->[current_set_]=$name;
+
+  return $name;
 }
+
+
+# Returns the path of a file, in a next set ( or set provided)
+sub next_file_name{
+	my $self =shift;
+  my $set_dir=$self->[current_set_]//$self->next_set_name;
+
+  my @list= map {hex} sort grep {length == 32 } map {s/\.jpack// ; basename $_ } <$set_dir/*.jpack>;
+
+  unless(@list){
+    push @list, -1;
+  }
+
+  my $max=pop @list;
+
+	my $name=sprintf "$set_dir/%032x.jpack", $max+1;
+  return $name;
+}
+
+#########################################
+# sub open_next_file {                  #
+#   my $self=shift;                     #
+#   my $name=$self->next_file_name(@_); #
+#   open my $fh, ">>", $name;           #
+#   $fh;                                #
+# }                                     #
+#########################################
+
+sub html_root {
+  my $self=shift;
+  $self->[html_root_];
+}
+
+sub current_set {
+  my $self=shift;
+  $self->[current_set_];
+}
+
+sub current_file {
+  my $self=shift;
+  $self->[current_file_];
+}
+
+
+sub set_prefix {
+  my $self=shift;
+  $self->[prefix_]=shift;
+}
+
 
 1;

@@ -70,6 +70,7 @@ class ChunkLoader extends ScriptLoader {
 
 
 
+
 	//This callback is executed from a chunk script to decode/decompress the data
 	//
 	decodeData(options, dataFunc){
@@ -285,6 +286,15 @@ class ChunkLoader extends ScriptLoader {
 
     });
 	}
+
+  //Load the application
+  app(){
+    this.load_rec("app/jpack",  (data)=>{
+      // Expected the content is javascript. Create a script element, with the content and append to head?
+      let s=document.createElement("script");
+      s.innerHTML=data;
+    });
+  }
 
 	/**
 	 * Load a sequential set of chunk files. The files are sequencially numbered'
