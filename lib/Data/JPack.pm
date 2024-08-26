@@ -258,7 +258,7 @@ sub next_set_name {
   #make_path $name;
 
   $self->[current_set_]=$name;
-
+  say STDERR  "NEXT SET NAME is $name";
   return $name;
 }
 
@@ -277,6 +277,7 @@ sub next_file_name{
   my $max=pop @list;
 
 	my $name=sprintf "$set_dir/%032x.jpack", $max+1;
+  say STDERR "NEXT file name $name";
   return $name;
 }
 
@@ -310,5 +311,11 @@ sub set_prefix {
   $self->[prefix_]=shift;
 }
 
+sub flush {
+  my $self=shift;
+# remove all directories under the current prefix
+  my $dir=$self->[html_root_]."/".$self->[prefix_];
+  remove_tree $dir;
 
+}
 1;

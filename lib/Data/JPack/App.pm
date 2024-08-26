@@ -19,7 +19,8 @@ sub resource_map {
   #
   my @outputs;
 
-  push @outputs, "data/jpack/bootstrap.jpack";
+  # put bootstrap into 0/0
+  push @outputs, "app/jpack/00000000000000000000000000000000/00000000000000000000000000000000.jpack";
 
   #############################################################
   # for(@inputs){                                             #

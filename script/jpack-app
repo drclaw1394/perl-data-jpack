@@ -39,6 +39,7 @@ my %options=(
 GetOptions(\%options,
   "prefix=s",
 	"html_container=s",
+  "flush",  # Flush the data and app
   #"byte_limit=i",
   #"message_limit=i",
   #"read_size=i",
@@ -59,7 +60,12 @@ if(delete $options{compress}){
 }
 
 
+
+
 my $jpack=Data::JPack->new(prefix=>$options{prefix}, html_container=>$options{html_container}, );
+if($option{flush}){
+  $jpack->flush;
+}
 
 for(@ARGV){
   my $name=$jpack->next_file_name;

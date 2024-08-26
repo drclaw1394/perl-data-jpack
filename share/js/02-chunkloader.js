@@ -7,7 +7,7 @@ class ChunkLoader extends ScriptLoader {
 		super(selfSrc);
 
     let parts=this.src.split("/");
-    //parts.pop();
+    parts.pop();
     parts.pop();
     parts.pop();
     parts.pop();
@@ -50,14 +50,15 @@ class ChunkLoader extends ScriptLoader {
 	bootstrap(){
 
     // Path is relative to this.buildRoot
-    return this.queueChunkScript("data/jpack/bootstrap.jpack")
+    let name="app/jpack/00000000000000000000000000000000/00000000000000000000000000000000.jpack";
+    return this.queueChunkScript(name)
       .then((data)=>{
         let decoder=new TextDecoder("utf-8");
         let string=decoder.decode(data);
         return this.pool.addScriptBody(string)
         .then(()=>{
           // Unload scripts
-          this.unloadScript(this.buildRoot+"data/jpack/bootstrap.jpack");
+          this.unloadScript(this.buildRoot+name);
 
           this.chunksLoaded++;
           this.updateStatus("Boot Complete");
@@ -194,14 +195,13 @@ class ChunkLoader extends ScriptLoader {
 
     let fail_count=0;
     let stack=[];
-
-		function next(seq){
+    let seq=0;
+		function next(){
 			//setTimeout(()=>{
+        console.log("IN NEXT", stack);
         let prefix= stack.map((e)=>{return sprintf("%032X", e)}).join("/");
-        if(prefix.length){
-          prefix+="/";
-        }
-				segPath=sprintf("%s/%s%032X.jpack",head,prefix,seq);
+        segPath=head+"/"+prefix+".jpack";
+        //segPath=sprintf("%s/%s%032X.jpack",head,prefix,seq);
         
 				p=p.then(()=>{
 					return chunkLoader.queueChunkScript(segPath);
@@ -216,11 +216,14 @@ class ChunkLoader extends ScriptLoader {
             scope.chunksLoaded++;
 						scope.updateStatus("Building channels complete "+segPath);
 
-            scope.unloadScript(scope.buildRoot+segPath);
+            //scope.unloadScript(scope.buildRoot+segPath);
 
 						seq++;	
 						if(seq<limit){
-							next(seq);
+              let v=stack.pop();
+              v++;
+              stack.push(v);
+							next();
               fail_count=0;   //Reset fail count
 							return Promise.resolve();
 						}
@@ -235,10 +238,13 @@ class ChunkLoader extends ScriptLoader {
             console.log("fail count", fail_count);
             switch(fail_count){
               case 1:
-                // Reached end of current dir push child
-                stack.push(1);
+                // Reached end of current dir push first child
+                stack.pop();
+                stack.push(0);
+                stack.push(0);
+                console.log(stack);
                 //i=1; 
-                next(1);
+                next();
                 break;
 
               case 2:
@@ -247,8 +253,9 @@ class ChunkLoader extends ScriptLoader {
                 let v=stack.pop();
                 v++;
                 stack.push(v);
+                stack.push(0);
                 //i=1;
-                next(1);
+                next();
                 break;
 
               case 3:
@@ -266,14 +273,16 @@ class ChunkLoader extends ScriptLoader {
 
 					.finally(()=>{
             // Unload scripts
-            scope.unloadScript(scope.buildRoot+segPath);
+            //scope.unloadScript(scope.buildRoot+segPath);
 						return Promise.resolve();
 					})
 
 
 			//},0);
 		}
-		next(1);
+
+    stack.push(0);
+		next();
 
 		return last.then(()=>{
 		}).catch((e)=>{
