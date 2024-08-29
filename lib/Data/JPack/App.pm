@@ -20,20 +20,8 @@ sub resource_map {
   my @outputs;
 
   # put bootstrap into 0/0
-  push @outputs, "app/jpack/00000000000000000000000000000000/00000000000000000000000000000000.jpack";
+  push @outputs, "app/jpack/boot/00000000000000000000000000000000/00000000000000000000000000000000.jpack";
 
-  #############################################################
-  # for(@inputs){                                             #
-  #   if(/pako/){                                             #
-  #     # Boot strap this into tmp dir                        #
-  #     $_=_bootstrap();                                      #
-  #     push @outputs, "data/jpack/bootstrap.jpack";          #
-  #   }                                                       #
-  #   else {                                                  #
-  #     push @outputs, "client/components/jpack".basename $_; #
-  #   }                                                       #
-  # }                                                         #
-  #############################################################
   map {($inputs[$_],$outputs[$_])} 0..$#inputs;
 }
 

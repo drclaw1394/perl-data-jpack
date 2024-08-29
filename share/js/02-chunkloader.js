@@ -11,6 +11,7 @@ class ChunkLoader extends ScriptLoader {
     parts.pop();
     parts.pop();
     parts.pop();
+    parts.pop();
     
     
     this.buildRoot=parts.join("/")+"/";
@@ -50,7 +51,7 @@ class ChunkLoader extends ScriptLoader {
 	bootstrap(){
 
     // Path is relative to this.buildRoot
-    let name="app/jpack/00000000000000000000000000000000/00000000000000000000000000000000.jpack";
+    let name="app/jpack/boot/00000000000000000000000000000000/00000000000000000000000000000000.jpack";
     return this.queueChunkScript(name)
       .then((data)=>{
         let decoder=new TextDecoder("utf-8");
@@ -204,6 +205,7 @@ class ChunkLoader extends ScriptLoader {
         //segPath=sprintf("%s/%s%032X.jpack",head,prefix,seq);
         
 				p=p.then(()=>{
+          console.log("queuing chunk script", segPath);
 					return chunkLoader.queueChunkScript(segPath);
 				})
 					.then((data)=>{
@@ -249,6 +251,7 @@ class ChunkLoader extends ScriptLoader {
 
               case 2:
                 // Could not read child dir, try sibling
+                stack.pop();
                 stack.pop();
                 let v=stack.pop();
                 v++;
@@ -300,8 +303,12 @@ class ChunkLoader extends ScriptLoader {
   app(){
     this.load_rec("app/jpack",  (data)=>{
       // Expected the content is javascript. Create a script element, with the content and append to head?
+      let decoder=new TextDecoder("utf-8");
+      let string=decoder.decode(data);
+      console.log("----Content of script", string);
       let s=document.createElement("script");
-      s.innerHTML=data;
+      s.innerHTML=string;
+      document.head.appendChild(s);
     });
   }
 
