@@ -20,7 +20,7 @@ class ChunkLoader extends ScriptLoader {
 		this.manifest=[];
     this.path_manifest={};
 
-		this.chunksExpected=0;
+		this.chunksExpected=100;
 		this.chunksLoaded=0;
 
 		this.tags={};
@@ -419,7 +419,7 @@ window.addEventListener("load", (e)=>{
 	chunkLoader.bootstrap()
         .then(()=>{
             console.log("Bootstrap finished");
-            //chunkLoader.setStatusDisplay(new LoadingDisplay(document.body));
+            chunkLoader.setStatusDisplay(new LoadingDisplay(document.body));
 		        return Promise.resolve();
         })
         .then(()=>{

@@ -350,7 +350,7 @@ class LoadingDisplay {
 	}
   
   _setLabel(label){
-    this.label.innerHTML=label;
+    this.label.innerHTML="<br>"+label;
   }
 
   _setProgress(progress){
