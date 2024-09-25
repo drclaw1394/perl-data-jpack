@@ -5,7 +5,7 @@ use feature ":all";
 
 our $VERSION="v0.1.0";
 
-use feature qw<say switch>;
+use feature qw<say>;
 no warnings "experimental";
 
 use MIME::Base64;
@@ -232,7 +232,7 @@ sub next_set_name {
   my $self=shift;
   my $force=shift;
   # use the html_container as and prefix to locate the current set
-  my $dir=join "/", $self->[html_root_], $self->[options_]{prefix}?($self->[options_]{prefix}):();
+  my $dir=join "/", $self->[html_root_], $self->[prefix_]?$self->[prefix_]:();
 
   my @list;
   if(defined($force)  and $force){
@@ -309,6 +309,7 @@ sub current_file {
 sub set_prefix {
   my $self=shift;
   $self->[prefix_]=shift;
+  $self->[current_set_]=undef;
 }
 
 sub flush {

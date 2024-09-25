@@ -90,6 +90,7 @@ class ChunkLoader extends ScriptLoader {
 	 */
 	_decodeChunk(e){
 		switch(e.options.jpack_type){
+      case "app":
 			case "data":
       case "boot":
 				//console.log("SENDING DATA");
@@ -179,7 +180,7 @@ class ChunkLoader extends ScriptLoader {
 	}
 
   //Fails/ends when two items can not be loaded
-	load_rec(path, callback){
+	load(path, callback){
 		let head=path;
 		let segPath;;	
 		let p= Promise.resolve();
@@ -218,7 +219,7 @@ class ChunkLoader extends ScriptLoader {
             scope.chunksLoaded++;
 						scope.updateStatus("Building channels complete "+segPath);
 
-            //scope.unloadScript(scope.buildRoot+segPath);
+            scope.unloadScript(scope.buildRoot+segPath);
 
 						seq++;	
 						if(seq<limit){
@@ -245,6 +246,7 @@ class ChunkLoader extends ScriptLoader {
                 stack.push(0);
                 stack.push(0);
                 console.log(stack);
+                scope.unloadScript(scope.buildRoot+segPath);
                 //i=1; 
                 next();
                 break;
@@ -257,6 +259,7 @@ class ChunkLoader extends ScriptLoader {
                 v++;
                 stack.push(v);
                 stack.push(0);
+                scope.unloadScript(scope.buildRoot+segPath);
                 //i=1;
                 next();
                 break;
@@ -276,7 +279,7 @@ class ChunkLoader extends ScriptLoader {
 
 					.finally(()=>{
             // Unload scripts
-            //scope.unloadScript(scope.buildRoot+segPath);
+            scope.unloadScript(scope.buildRoot+segPath);
 						return Promise.resolve();
 					})
 
@@ -299,9 +302,14 @@ class ChunkLoader extends ScriptLoader {
     });
 	}
 
-  //Load the application
+  //Load the normal data stored in jpack database
+  data(cb){
+    return this.load("data/jpack",  cb);
+  }
+
+  //Load the application scripts stored in jpack database
   app(){
-    this.load_rec("app/jpack",  (data)=>{
+    this.load("app/jpack",  (data)=>{
       // Expected the content is javascript. Create a script element, with the content and append to head?
       let decoder=new TextDecoder("utf-8");
       let string=decoder.decode(data);
@@ -311,77 +319,90 @@ class ChunkLoader extends ScriptLoader {
       document.head.appendChild(s);
     });
   }
+  css(){
+    this.load("css/jpack",  (data)=>{
+      // Expected the content is javascript. Create a script element, with the content and append to head?
+      let decoder=new TextDecoder("utf-8");
+      let string=decoder.decode(data);
+      console.log("----Content of style", string);
+      let s=document.createElement("style");
+      s.innerHTML=string;
+      document.head.appendChild(s);
+    });
+  }
 
 	/**
 	 * Load a sequential set of chunk files. The files are sequencially numbered'
 	 */
-	load(path, callback){
-		let head=path;
-		let segPath;;	
-		let p= Promise.resolve();
-		let resolver;
-		let rejecter;
-		let last=new Promise((resolve, reject)=>{
-			resolver=resolve;
-			rejecter=reject;
-		});
-    let limit=1000;
-		//limit=limit==undefined?1000:limit;
-		let i=1;	
-		let scope=this;
-
-		function next(seq){
-			setTimeout(()=>{
-				segPath=sprintf("%s/%032X.jpack",head,i);;	
-				p=p.then(()=>{
-					return chunkLoader.queueChunkScript(segPath);
-				})
-					.then((data)=>{
-						scope.updateStatus("Building channels from "+segPath);
-
-            // Delete the script element  as we no longer need it
-						return callback(data);//channelManager.buildChannels(data);
-					})
-					.then(()=>{
-            scope.chunksLoaded++;
-						scope.updateStatus("Building channels complete "+segPath);
-
-
-						i++;	
-						if(i<limit){
-							next(i);
-							return Promise.resolve();
-						}
-						else {
-							resolver();
-						}
-					})
-					.catch((e)=>{
-						console.log("CATCH",e);
-						rejecter();
-					})
-					.finally(()=>{
-            // Unload scripts
-            scope.unloadScript(scope.buildRoot+segPath);
-						return Promise.resolve();
-					})
-
-
-			},0);
-		}
-		next(i);
-
-		return last.then(()=>{
-		}).catch((e)=>{
-
-    })
-    .finally(()=>{
-			  this.updateStatus("Loading Complete", 1);
-        //console.log("LOAD COMPLETE");
-			return Promise.resolve();
-
-    });
-	}
+    /***********************************************************************************************************/
+    /*     load(path, callback){                                                                               */
+    /*             let head=path;                                                                              */
+    /*             let segPath;;                                                                               */
+    /*             let p= Promise.resolve();                                                                   */
+    /*             let resolver;                                                                               */
+    /*             let rejecter;                                                                               */
+    /*             let last=new Promise((resolve, reject)=>{                                                   */
+    /*                     resolver=resolve;                                                                   */
+    /*                     rejecter=reject;                                                                    */
+    /*             });                                                                                         */
+    /* let limit=1000;                                                                                         */
+    /*             //limit=limit==undefined?1000:limit;                                                        */
+    /*             let i=1;                                                                                    */
+    /*             let scope=this;                                                                             */
+    /*                                                                                                         */
+    /*             function next(seq){                                                                         */
+    /*                     setTimeout(()=>{                                                                    */
+    /*                             segPath=sprintf("%s/%032X.jpack",head,i);;                                  */
+    /*                             p=p.then(()=>{                                                              */
+    /*                                     return chunkLoader.queueChunkScript(segPath);                       */
+    /*                             })                                                                          */
+    /*                                     .then((data)=>{                                                     */
+    /*                                             scope.updateStatus("Building channels from "+segPath);      */
+    /*                                                                                                         */
+    /*         // Delete the script element  as we no longer need it                                           */
+    /*                                             return callback(data);//channelManager.buildChannels(data); */
+    /*                                     })                                                                  */
+    /*                                     .then(()=>{                                                         */
+    /*         scope.chunksLoaded++;                                                                           */
+    /*                                             scope.updateStatus("Building channels complete "+segPath);  */
+    /*                                                                                                         */
+    /*                                                                                                         */
+    /*                                             i++;                                                        */
+    /*                                             if(i<limit){                                                */
+    /*                                                     next(i);                                            */
+    /*                                                     return Promise.resolve();                           */
+    /*                                             }                                                           */
+    /*                                             else {                                                      */
+    /*                                                     resolver();                                         */
+    /*                                             }                                                           */
+    /*                                     })                                                                  */
+    /*                                     .catch((e)=>{                                                       */
+    /*                                             console.log("CATCH",e);                                     */
+    /*                                             rejecter();                                                 */
+    /*                                     })                                                                  */
+    /*                                     .finally(()=>{                                                      */
+    /*         // Unload scripts                                                                               */
+    /*         scope.unloadScript(scope.buildRoot+segPath);                                                    */
+    /*                                             return Promise.resolve();                                   */
+    /*                                     })                                                                  */
+    /*                                                                                                         */
+    /*                                                                                                         */
+    /*                     },0);                                                                               */
+    /*             }                                                                                           */
+    /*             next(i);                                                                                    */
+    /*                                                                                                         */
+    /*             return last.then(()=>{                                                                      */
+    /*             }).catch((e)=>{                                                                             */
+    /*                                                                                                         */
+    /* })                                                                                                      */
+    /* .finally(()=>{                                                                                          */
+    /*                       this.updateStatus("Loading Complete", 1);                                         */
+    /*     //console.log("LOAD COMPLETE");                                                                     */
+    /*                     return Promise.resolve();                                                           */
+    /*                                                                                                         */
+    /* });                                                                                                     */
+    /*     }                                                                                                   */
+    /***********************************************************************************************************/
 
   // This should only be called once during load
   set_path_manifest(hash){
