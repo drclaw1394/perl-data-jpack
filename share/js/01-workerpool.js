@@ -281,7 +281,7 @@ class ScriptLoader {
 					scope.promises[scriptURL]=undefined;
 				};
 				script.onerror=(e)=>{
-					console.log(e, "ERROR LOAZDING scirpt");
+					//console.log(e, "ERROR LOAZDING scirpt");
 					scope.scripts[scriptURL]=e.target;
 					reject("asdf");
 				};
