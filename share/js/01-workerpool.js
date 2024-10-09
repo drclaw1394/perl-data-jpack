@@ -296,10 +296,12 @@ class ScriptLoader {
 	unloadScript(scriptURL){
     //console.log("unloading script "+scriptURL);
     //console.log(this.scripts);
-		if(this.scripts[scriptURL]!=undefined){
+		if(this.scripts[scriptURL]){
       //console.log("UNLOADING SCRIPT===============", scriptURL);
       //console.log(this.scripts[scriptURL]);
-			this.scripts[scriptURL].parentElement.removeChild(this.scripts[scriptURL]);
+      if(this.scripts[scriptURL].parentElement){
+			  this.scripts[scriptURL].parentElement.removeChild(this.scripts[scriptURL]);
+      }
 			this.promises[scriptURL]=undefined;
 		}
 	}

@@ -173,7 +173,7 @@ class ChunkLoader extends ScriptLoader {
 				})
 				.catch((e)=>{
 					this.updateStatus("Error data "+ entry.path);
-					console.log("Caught error");
+					console.log("Caught error", entry);
 					entry.rejecter("Could not load script");
 				});
 			},0);
@@ -201,7 +201,6 @@ class ChunkLoader extends ScriptLoader {
     let seq=0;
 		function next(){
 			//setTimeout(()=>{
-        //console.log("IN NEXT", stack);
         let prefix= stack.map((e)=>{return sprintf("%032X", e)}).join("/");
         segPath=head+"/"+prefix+".jpack";
         //segPath=sprintf("%s/%s%032X.jpack",head,prefix,seq);
@@ -292,6 +291,7 @@ class ChunkLoader extends ScriptLoader {
 		next();
 
 		return last.then(()=>{
+
 		}).catch((e)=>{
 
     })
@@ -310,7 +310,7 @@ class ChunkLoader extends ScriptLoader {
 
   //Load the application scripts stored in jpack database
   app(){
-    this.load("app/jpack",  (data)=>{
+    return this.load("app/jpack/main",  (data)=>{
       // Expected the content is javascript. Create a script element, with the content and append to head?
       let decoder=new TextDecoder("utf-8");
       let string=decoder.decode(data);
@@ -321,7 +321,7 @@ class ChunkLoader extends ScriptLoader {
     });
   }
   css(){
-    this.load("css/jpack",  (data)=>{
+    return this.load("app/jpack/css",  (data)=>{
       // Expected the content is javascript. Create a script element, with the content and append to head?
       let decoder=new TextDecoder("utf-8");
       let string=decoder.decode(data);
