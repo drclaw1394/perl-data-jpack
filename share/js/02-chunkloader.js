@@ -40,7 +40,7 @@ class ChunkLoader extends ScriptLoader {
 
   updateStatus(message,mode){
     //console.log("UPDATE STATUS CALLED");
-      let e=new CustomEvent("JPACK_STATUS",{detail: {progress: 100*this.chunksLoaded/this.chunksExpected, message:message, mode:mode}});
+      let e=new CustomEvent("JPACK_STATUS",{detail: {progress: parseInt(100*this.chunksLoaded/this.chunksExpected), message:message, mode:mode}});
       window.dispatchEvent(e);
 
   }
@@ -181,7 +181,7 @@ class ChunkLoader extends ScriptLoader {
 	}
 
   //Fails/ends when two items can not be loaded
-	load(path, callback){
+	load(path, callback, multi){
 		let head=path;
 		let segPath;;	
 		let p= Promise.resolve();
@@ -196,13 +196,31 @@ class ChunkLoader extends ScriptLoader {
     let limit=1000;
 		let scope=this;
 
-    let fail_count=0;
-    let stack=[];
+    //let fail_count=0;
+    //let stack=[];
     let seq=0;
-		function next(){
+
+    //Stack, step, offset, fail_count
+		function next(oldStack, step, offset, fail_count){
+
+      console.log("OLD STACK", oldStack);
+      //Copy stack
+      let stack=oldStack.map((e)=>{return e});
+
+      let m=stack.pop();
+      m++;
+      let v=m*step+offset;
+      stack.push(v);
+
 			//setTimeout(()=>{
         let prefix= stack.map((e)=>{return sprintf("%032X", e)}).join("/");
+
+
+
         segPath=head+"/"+prefix+".jpack";
+        stack.pop();
+        stack.push(m);
+
         //segPath=sprintf("%s/%s%032X.jpack",head,prefix,seq);
         
 				p=p.then(()=>{
@@ -223,11 +241,11 @@ class ChunkLoader extends ScriptLoader {
 
 						seq++;	
 						if(seq<limit){
-              let v=stack.pop();
-              v++;
-              stack.push(v);
-							next();
+              //let v=stack.pop();
+              //v++;
+              //stack.push(v);
               fail_count=0;   //Reset fail count
+							next(stack, step, offset, fail_count);
 							return Promise.resolve();
 						}
 						else {
@@ -236,40 +254,46 @@ class ChunkLoader extends ScriptLoader {
 					})
 
 					.catch((e)=>{
-						//console.log("CATCH",e);
+				  	console.log("CATCH", e,  fail_count);
             fail_count++;
             //console.log("fail count", fail_count);
             switch(fail_count){
               case 1:
-                // Reached end of current dir push first child
+                scope.unloadScript(scope.buildRoot+segPath);
+                console.log("Reached end of current dir push first child dir with first file ");
+
+                //Depth first  Pop the current value, push to first child, and push to first file
                 stack.pop();
                 stack.push(0);
-                stack.push(0);
-                //console.log(stack);
-                scope.unloadScript(scope.buildRoot+segPath);
-                //i=1; 
-                next();
+                stack.push(-1);
+
+                next(stack, step, offset, fail_count);
+
                 break;
 
               case 2:
-                // Could not read child dir, try sibling
+                scope.unloadScript(scope.buildRoot+segPath);
+                console.log("Could not read child dir with expected first file");
+
+                // Pop the the file, pop the child,
                 stack.pop();
                 stack.pop();
                 let v=stack.pop();
                 v++;
                 stack.push(v);
-                stack.push(0);
-                scope.unloadScript(scope.buildRoot+segPath);
+                stack.push(-1);
                 //i=1;
-                next();
+                next(stack, step, offset, fail_count);
                 break;
 
               case 3:
                 // Could not read sibling dir
+                console.log("Could not read siblind dir");
 						    rejecter();
                 break
               default:
                 //  Should not get here
+                console.log("DEFAULT jpack error");
 						    rejecter();
                 break;
             }
@@ -287,8 +311,14 @@ class ChunkLoader extends ScriptLoader {
 			//},0);
 		}
 
-    stack.push(0);
-		next();
+    //stack.push(0);
+    if(multi){
+      next([-1], 2, 0, 0 );
+      next([-1], 2, 1, 0 );
+    }
+    else {
+      next([-1], 1 ,0  ,0);
+    }
 
 		return last.then(()=>{
 
@@ -305,7 +335,7 @@ class ChunkLoader extends ScriptLoader {
 
   //Load the normal data stored in jpack database
   data(cb){
-    return this.load("data/jpack",  cb);
+    return this.load("data/jpack",  cb, 0);
   }
 
   //Load the application scripts stored in jpack database
@@ -314,7 +344,7 @@ class ChunkLoader extends ScriptLoader {
       // Expected the content is javascript. Create a script element, with the content and append to head?
       let decoder=new TextDecoder("utf-8");
       let string=decoder.decode(data);
-      //console.log("----Content of script", string);
+      console.log("----Content of script", string);
       let s=document.createElement("script");
       s.innerHTML=string;
       document.head.appendChild(s);

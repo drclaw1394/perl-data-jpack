@@ -69,6 +69,7 @@ if($options{flush}){
 }
 
 for(@ARGV){
+  $jpack->set_prefix($options{prefix});
   my $name=$jpack->next_file_name;
   my $data=do {open my $fh, "<", $_; local $/=undef; <$fh>};
   my $encoded=$jpack->encode($data);
