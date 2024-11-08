@@ -1,40 +1,27 @@
-Data-JPack version 0.01
-=======================
+NAME
+    Data::JPack - Offline/Online Web application and data system
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+SYNOPISIS
+      use Data::JPack;
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+      my $packer=Data::JPack->new();
+      $packer->encode ($data);
 
-INSTALLATION
+DESCRIPTION
+    Provides a mechanism to store any data type (text, binary etc) so a web
+    browser can load the data without the requirement of a server (ie local
+    files) or samesite/ origin security issues. Data is normally compressed
+    before encoded
 
-To install this module type the following:
+    It also implements a worker pool system to allow backgroun processing of
+    data and user exentable functions
 
-   perl Makefile.PL
-   make
-   make test
-   make install
+    It provides the bootstrapping to load application code, and arbitary
+    data, by making a file system database loadable from a webpage.
 
-DEPENDENCIES
-
-This module requires these other modules and libraries:
-
-  blah blah blah
-
-COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
-
-Copyright (C) 2021 by Ruben Westerberg
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.30.2 or,
-at your option, any later version of Perl 5 you may have available.
-
+HOW IT WORKS
+    The basics is data is encoded into base64 text, which is then the return
+    value from function. This function is the wrapper which is stored in the
+    loadable datafile. This function is passed to the JPack decodeer, which
+    calls the function when the file is ready.
 
