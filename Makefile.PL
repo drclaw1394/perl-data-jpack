@@ -8,6 +8,12 @@ WriteMakefile(
     NAME              => 'Data::JPack',
     VERSION_FROM      => 'lib/Data/JPack.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
     EXE_FILES         =>  ['script/jpack-app'],
+    BUILD_REQUIRES    => {
+      "File::ShareDir::Install"=>0,
+    },
+    CONFIGURE_REQUIRES    => {
+      "File::ShareDir::Install"=>0,
+    },
     PREREQ_PM         => {
       "Export::These"=>0,
       "constant::more"=>0,
