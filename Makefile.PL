@@ -16,11 +16,21 @@ WriteMakefile(
       "IO::Uncompress::RawInflate"=>0,
 
     }, # e.g., Module::Name => 1.1
-    ABSTRACT_FROM     => 'lib/Data/JPack.pm', # retrieve abstract from module
+    ABSTRACT_FROM     => 'lib/Data/JPack.pod', # retrieve abstract from module
     AUTHOR            => 'Ruben Westerberg <drclaw@mac.com>',
     LICENSE           => 'mit',
-    #Value must be from legacy list of licenses here
-    #https://metacpan.org/pod/Module::Build::API
+    META_ADD => {
+      "meta-spec" => {
+        version => 2
+      },
+      resources=> {
+        repository =>{
+          type => "git",
+          url => "git://github.com/drclaw1394/perl-data-jpack.git",
+          web => "https://github.com/drclaw1394/perl-data-jpack",
+        }
+      }
+    }
 );
 
 package MY;
