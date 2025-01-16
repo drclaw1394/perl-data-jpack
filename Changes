@@ -1,6 +1,11 @@
 Revision history for Perl extension Data::JPack.
 
-0.01  Fri Oct 22 12:05:23 2021
+v0.1.1  2024-12-13
+  [improvements]
+    - added OO API ->encode_file. Reads input file, encodes, and writes to
+      output file if supplied.
+  
+v0.1.0  2024-10-22
 	- original version; created by h2xs 1.23 with options
 		-PX -n Data::JPack
 
