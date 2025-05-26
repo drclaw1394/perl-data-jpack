@@ -1,4 +1,12 @@
 Revision history for Perl extension Data::JPack.
+v0.2.0 2025-05-26
+  -  Added uuid generation (https://github.com/verzth/uuid-js) to overcome non
+     secure context limitation in browser cryto api
+
+  -  Added hashing functions (https://github.com/Caligatio/jsSHA) to overcome
+     non secure context limititions in broswer cryto api secure context
+
+  - Removed artifcat files from distribution
 
 v0.1.1  2024-12-13
   [improvements]
