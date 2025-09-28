@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use feature ":all";
 
-our $VERSION="v0.2.0";
+our $VERSION="v0.2.1";
 
 use feature qw<say>;
 no warnings "experimental";
@@ -39,7 +39,6 @@ my %seen;
 
 sub new {
 	my $pack=shift//__PACKAGE__;
-  say STDERR "IN NEW JPACK";
 	#options include
 	#	compression
 	#	tagName
@@ -75,7 +74,6 @@ sub new {
 
   make_path $self->[html_root_];
 
-  say STDERR "HTML ROOT IS $self->[html_root_]";
   #$self->[prefix_]
   #$self->[html_root_];
 	bless $self , $pack;
@@ -176,14 +174,15 @@ sub encode_file {
   my $out_path=shift;
 
 	local $/;
-	return unless open my $file, "<", $path;
+  #return unless 
+  open my $file, "<", $path or die "$path: $!";
 
 	my $data=$self->encode(<$file>);
 
   if($out_path){
     my $dir=dirname $out_path;
     make_path $dir;
-    open my $fh, ">", $out_path;
+    open my $fh, ">", $out_path or die $!;
     print $fh $data;
   }
   else
@@ -305,7 +304,6 @@ sub next_set_name {
   #make_path $name;
 
   $self->[current_set_]=$name;
-  say STDERR  "NEXT SET NAME is $name";
   return $name;
 }
 
@@ -319,9 +317,8 @@ sub next_file_name{
   if(defined $path){
     my $p=$self->[html_root_]."/".$self->[prefix_]."/".$path;
     if($seen{$p}){
-      use feature ":all";
-      say STDERR "================JAPCK ALREADE SEEN $path";
-      sleep 1;
+      #use feature ":all";
+      #sleep 1;
       return undef;
     }
     else {
@@ -342,7 +339,6 @@ sub next_file_name{
   my $max=pop @list;
 
 	my $name=sprintf "$set_dir/%032x.jpack", $max+1;
-  say STDERR "NEXT file name $name";
   return $name;
 }
 
