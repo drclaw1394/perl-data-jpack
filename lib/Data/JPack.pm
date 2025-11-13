@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use feature ":all";
 
-our $VERSION="v0.2.2";
+our $VERSION="v0.2.3";
 
 use feature qw<say>;
 no warnings "experimental";
