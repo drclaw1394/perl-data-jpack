@@ -84,5 +84,14 @@ sub  _bootstrap {
     $data_file;
 }
 
+sub template_path {
+    use File::ShareDir ":ALL";
+    my $share=dist_dir "Data-JPack";
+    my $parent_root= "$share";
+
+    #Return the root relative path and the root
+    ("app.plt", $share);
+    
+}
 
 1;
