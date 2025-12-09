@@ -1,20 +1,20 @@
 @{[ init {
   use feature ":all";
   use Data::JPack::App;
-  say STDERR $Data::JPack::App::VERSION;
 
-  my %map=Data::JPack::App->resource_map;
-  say STDERR "RESOURCES ARE @{[%map]}";
+
+  # BOOTSTAPPING OF A JPACK APP
+  # 
+  my %map=Data::JPack::App->_bootstrap;
 
   for(keys %map){
     $self->add_resource($_, output=>$map{$_});
-    say "RESOURCE FOR key $_ is ", res $_;
     append_slot(head_start=>qq{<script src="@{[res $_]}"></script>});
   }
 
+  #
 
-}
-]}
+}]}
 
 <!doctype html>
 <html lan="en" data-bs-theme="dark">
