@@ -108,13 +108,20 @@ sub add_to_jpack_container {
 
 
 # Wrapper around a sub to localize changes to the urltable object. 
-#
+# Adjusts the URL table to load resources relative to a new src.
+# executes the sub with new source and then resets
+# Optional package name to use for calling template path
 sub localize_table {
-  my (undef, $t, $sub)=@_;
+  my (undef, $t, $sub, $package)=@_;
+  #say STDERR "LOCALISING TABLE in package:", __PACKAGE__;
   return unless $t isa Template::Plexsite;
 
   my $html_container=$t->sys_path_build;
-  my $root=$t->sys_path_src;
+  #my $root=$t->sys_path_src;
+  
+  my $caller=$package//caller;
+  my (undef, $root)=$caller->template_path;
+  #say STDERR "LOCALISING TABLE to $root";
 
   my $new_table=Template::Plexsite::URLTable->new(src=>$root, html_root=>$html_container, locale=>$t->args->{locale});
 
@@ -124,8 +131,20 @@ sub localize_table {
 
 
   # Use the magical perl local
-  local $t->table=$new_table;
-  $sub->($t);
+  #local $t->table=$new_table;
+  #$sub->($t);
+
+  my $prev_table=$t->table;
+
+  use feature "try";
+  try {
+    $t->table=$new_table;
+    $sub->($t);
+  }
+  catch($e){
+    
+  }
+  $t->table=$prev_table;
 }
 
 1;
