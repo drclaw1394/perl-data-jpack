@@ -71,6 +71,8 @@ sub  _bootstrap {
       $prefix.="\n";
     }
 
+    $prefix=Data::JPack::minify_js $prefix;
+
     # Pre encode pako into jpack format
     my $encoded="if(window.chunkLoader.booted){\n";
     $encoded.=$packer->encode($pako);
