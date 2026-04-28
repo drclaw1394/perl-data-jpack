@@ -4,6 +4,9 @@ v0.3.0 2026-04-21
     - add css and javascript minification support
     - add CSS::Minifier::XS and JavaScript::Minifier::XS as deps
     - Add (poor) documentation
+  
+  [fixes]
+    - Return list of paths when bootstrapped file exists
 
 v0.2.3 2026-02-27
   [fixes]

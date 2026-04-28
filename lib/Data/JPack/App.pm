@@ -3,8 +3,6 @@ package Data::JPack::App;
 our $VERSION="v0.1.1";
 
 use v5.36;
-use strict;
-use warnings;
 
 use Data::JPack;
 use Template::Plexsite::URLTable;
@@ -40,6 +38,7 @@ sub js_paths {
 # chunkloader and worker pool contents
 #
 my $dir;
+my $out_bs="app/jpack/boot/00000000000000000000000000000000/00000000000000000000000000000000.jpack";
 sub  _bootstrap {
 
     use File::Temp qw<tempdir>;
@@ -47,7 +46,7 @@ sub  _bootstrap {
 
     my $data_file="$dir/bootstrap.jpack";
 
-    return $data_file if -e $data_file;
+    return ($data_file, $out_bs) if -e $data_file;
 
     print STDERR "Regenerating  JPack bootstrap file\n";
 
@@ -85,7 +84,7 @@ sub  _bootstrap {
     print $of $encoded;
 
       #};
-    ($data_file, "app/jpack/boot/00000000000000000000000000000000/00000000000000000000000000000000.jpack");
+    ($data_file, $out_bs);
 }
 
 # API
@@ -139,6 +138,7 @@ sub localize_table {
   my $prev_table=$t->table;
 
   use feature "try";
+  no warnings "experimental";
   try {
     $t->table=$new_table;
     $sub->($t);

@@ -199,7 +199,7 @@ sub encode_file {
 
   }
 
-	my $data=$self->encode($data);
+	$data=$self->encode($data);
 
   if($out_path){
     my $dir=dirname $out_path;
