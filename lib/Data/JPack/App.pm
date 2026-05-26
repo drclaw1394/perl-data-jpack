@@ -1,6 +1,6 @@
 # JPack application (web client)
 package Data::JPack::App;
-our $VERSION="v0.1.1";
+our $VERSION="v0.1.2";
 
 use v5.36;
 
