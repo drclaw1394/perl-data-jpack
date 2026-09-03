@@ -1,7 +1,7 @@
 use ExtUtils::MakeMaker;
-use File::ShareDir::Install;
+#use File::ShareDir::Install;
 
-install_share dist=>"share";
+#install_share dist=>"share";
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
@@ -41,5 +41,5 @@ WriteMakefile(
     }
 );
 
-package MY;
-use File::ShareDir::Install qw(postamble);
+#package MY;
+#use File::ShareDir::Install qw(postamble);
